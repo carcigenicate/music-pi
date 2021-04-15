@@ -19,7 +19,7 @@ PAYLOAD_ENCODING = "UTF-8"
 MUSIC_EXTENSION = "mp3"
 
 SUBSCRIBE_TOPIC = "request"
-HOSTNAME = "192.168.50.48"
+HOSTNAME = "192.168.50.156"
 CLIENT_ID_BASE = "MusicPiClient"
 CLIENT_ID_POST_LENGTH = 5
 
@@ -39,7 +39,6 @@ def _song_path(youtube_id: str) -> str:
 def _clear_downloaded() -> None:
     """Deletes all regular files in the download directory."""
     for file in os.listdir(DOWNLOAD_DIRECTORY):
-        print(file)
         path = PurePath(DOWNLOAD_DIRECTORY, file)
         if isfile(path):
             os.remove(path)
@@ -139,6 +138,9 @@ class SongService:
         """Returns how many songs are available."""
         self._process_downloaded_queue()
         return len(self._available_song_ids)
+
+    def song_available(self) -> bool:
+        return len(self) > 0
 
     @staticmethod
     def _clear_downloaded() -> None:

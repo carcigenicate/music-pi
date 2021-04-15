@@ -37,11 +37,13 @@ class SimpleAudioPlayer:
 
     def play_from_path(self, song_path: str) -> None:
         """Starts playing the given song. Blocks until the song finishes."""
+        self.stop()
         self._send_command(f"load {song_path}")
 
         # mpg123 -R outputs a certain sentinel line when playback has finished, or when an error happens.
         while True:
             line = self._player_process.stdout.readline()
+            print("Debug:", line)
             if line.startswith(ERROR_SENTINEL):
                 player_logger.error(line.removeprefix(ERROR_SENTINEL))
             if line.startswith(END_PLAYBACK_SENTINEL) or not line:

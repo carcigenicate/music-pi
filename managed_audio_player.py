@@ -22,13 +22,19 @@ class ManagedAudioPlayer(SimpleAudioPlayer):
         """Will attempt to play the current song. Returns whether or not playing succeeded.
         Will fail if there are no available songs to play.
         Blocks until playback finishes."""
-        song_path = self._song_service.get_song_path_by_song_id(self._current_song_id)
-        if song_path is None:
-            return False
+        if self._current_song_id == INITIAL_SONG_ID:
+            if self._song_service.song_available():
+                self.next_song()
+            else:
+                return False
         else:
-            # Blocking
-            self.play_from_path(song_path)
-            return True
+            song_path = self._song_service.get_song_path_by_song_id(self._current_song_id)
+            if song_path is None:  # Should never be None since we checked for songs above.
+                return False
+            else:
+                # Blocking
+                self.play_from_path(song_path)
+                return True
 
     def next_song(self) -> bool:
         """Advances to the next song. Returns whether or not advancing succeeded.

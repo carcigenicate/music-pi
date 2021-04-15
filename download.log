@@ -1,0 +1,4 @@
+2021-04-15 07:49:11,206 WARNING Error downloading video ID Ey9AtjiKxeg: ERROR: WARNING: unable to obtain file audio codec with ffprobe
+2021-04-15 07:53:49,775 WARNING Error downloading video ID Ey9AtjiKxeg: ERROR: unable to rename file: [Errno 2] No such file or directory: '/home/brendon/PycharmProjects/music_pi/download/Ey9AtjiKxeg.webm.part' -> '/home/brendon/PycharmProjects/music_pi/download/Ey9AtjiKxeg.webm'
+2021-04-15 09:17:59,914 WARNING Error downloading video ID LMCU-lYb0G4: ERROR: unable to rename file: [Errno 2] No such file or directory: '/home/brendon/PycharmProjects/music_pi/download/LMCU-lYb0G4.webm.part' -> '/home/brendon/PycharmProjects/music_pi/download/LMCU-lYb0G4.webm'
+2021-04-15 09:43:54,300 WARNING Error downloading video ID bndL7wwAj0U: ERROR: WARNING: unable to obtain file audio codec with ffprobe
