@@ -32,6 +32,8 @@ PASSWORD = "reproject"
 PROJECT_PATH = Path(__file__).parent.absolute()
 DOWNLOAD_DIRECTORY = PROJECT_PATH / "download"
 
+service_logger = setup_logger("song_service", "song_service.log")
+
 
 def _song_path(youtube_id: str) -> str:
     return f"{PurePath(DOWNLOAD_DIRECTORY) / youtube_id}.{MUSIC_EXTENSION}"
@@ -114,9 +116,13 @@ class SongService:
         """An unfortunate consequence of multiprocessing. It would be difficult to handle this in child process due to
         IPC making copies of objects when sending them between processes.
         Should be called before any operation that uses the ID cache."""
-        while not self._downloaded_queue.empty():
-            downloaded_youtube_id = self._downloaded_queue.get()
-            self._available_song_ids.register_song(downloaded_youtube_id)
+        try:
+            while not self._downloaded_queue.empty():
+                downloaded_youtube_id = self._downloaded_queue.get()
+                self._available_song_ids.register_song(downloaded_youtube_id)
+        except OSError as e:
+            # TODO: .empty() can cause an "handle is closed" error during termination.
+            service_logger.warning(e)
 
     def get_song_path_by_song_id(self, song_id: int) -> Optional[str]:
         """Gets the youtube ID at the given song ID, if that song ID is available.
@@ -146,7 +152,6 @@ class SongService:
     def _clear_downloaded() -> None:
         """Deletes all regular files in the download directory."""
         for file in os.listdir(DOWNLOAD_DIRECTORY):
-            print(file)
             path = PurePath(DOWNLOAD_DIRECTORY, file)
             if isfile(path):
                 os.remove(path)

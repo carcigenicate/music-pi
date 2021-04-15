@@ -8,10 +8,10 @@ def player_loop(player: ManagedAudioPlayer):
         result = player.play_current_song()
         if result:
             print("Song Ended...")
-            print(2)
+            sleep(2)
         else:
-            print("Failed...")
-            sleep(5)
+            print("No song to play...")
+            sleep(2)
 
 
 def main():

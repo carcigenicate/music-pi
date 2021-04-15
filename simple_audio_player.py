@@ -28,6 +28,11 @@ class SimpleAudioPlayer:
         # To ensure that the real and "cached" volumes are in sync.
         self.set_volume(self._volume)
 
+        # Needed because if you send a "stop" to mpg123 before a "load", it breaks it in odd ways. It makes the output
+        #  violate the current assumptions; causing play_current_song to need to be called twice, and makes it
+        #  non-blocking. We need to prevent accidental stops from breaking things.
+        self._is_loaded = False
+
     def _send_command(self, command: str) -> None:
         # Apparently, writing directly to the STDIN can cause dead-locks, according to the Python documentation.
         # The alternative though (.communicate) don't work when sending commands without wanting to wait for the
@@ -37,20 +42,23 @@ class SimpleAudioPlayer:
 
     def play_from_path(self, song_path: str) -> None:
         """Starts playing the given song. Blocks until the song finishes."""
-        self.stop()
         self._send_command(f"load {song_path}")
+        self._is_loaded = True
 
         # mpg123 -R outputs a certain sentinel line when playback has finished, or when an error happens.
         while True:
             line = self._player_process.stdout.readline()
-            print("Debug:", line)
             if line.startswith(ERROR_SENTINEL):
                 player_logger.error(line.removeprefix(ERROR_SENTINEL))
             if line.startswith(END_PLAYBACK_SENTINEL) or not line:
                 break
 
     def stop(self) -> None:
-        self._send_command("stop")
+        if self._is_loaded:
+            self._send_command("stop")
+            self._is_loaded = False
+        else:
+            player_logger.warning("Attempted to stop a player that wasn't yet loaded.")
 
     def toggle_pause(self) -> None:
         self._send_command("pause")
@@ -75,7 +83,8 @@ class SimpleAudioPlayer:
 
     def terminate(self):
         """Should be called either directly or via a context manager to terminate the player process."""
-        self._player_process.terminate()
+        self._player_process.kill()  # mpg123 doesn't respond to SIGTERMs unfortunately.
+        self._player_process.wait()
 
     def __enter__(self) -> SimpleAudioPlayer:
         return self

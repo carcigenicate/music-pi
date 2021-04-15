@@ -7,6 +7,8 @@ INITIAL_SONG_ID = -1
 
 # TODO: Needs to accept a SongService, or a member of a interface that SongService can implement.
 #        Very hard to test as-is.
+# TODO: Also need to make thread-safe.
+
 
 class ManagedAudioPlayer(SimpleAudioPlayer):
     """An audio player that supports getting the next/previous song from an underlying song service.
@@ -60,8 +62,9 @@ class ManagedAudioPlayer(SimpleAudioPlayer):
             return True
 
     def terminate(self) -> None:
-        super().terminate()
         self._song_service.terminate_service()
+        super().terminate()
+
 
     def __enter__(self) -> ManagedAudioPlayer:
         return self
