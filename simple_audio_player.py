@@ -33,6 +33,9 @@ class SimpleAudioPlayer:
         #  non-blocking. We need to prevent accidental stops from breaking things.
         self._is_loaded = False
 
+        # Because mpg123 uses separate mute/unmute commands instead of one that toggles the mute state.
+        self._is_muted = False
+
     def _send_command(self, command: str) -> None:
         # Apparently, writing directly to the STDIN can cause dead-locks, according to the Python documentation.
         # The alternative though (.communicate) don't work when sending commands without wanting to wait for the
@@ -71,6 +74,13 @@ class SimpleAudioPlayer:
         """The provided adjustment should be an integer between -100 and 100 indicating how much to adjust the
         volume by. Negative numbers decrease volume, positive numbers increase."""
         self.set_volume(self._volume + adjust_amount)
+
+    def toggle_mute(self) -> bool:
+        """Toggles whether or not the audio is muted. Returns True if the audio was muted; else False."""
+        command = "unmute" if self._is_muted else "mute"
+        self._send_command(command)
+        self._is_muted = not self._is_muted
+        return self._is_muted
 
     def seek_by(self, seek_by: int) -> None:
         self._send_command(f"seek {seek_by:+f}")
