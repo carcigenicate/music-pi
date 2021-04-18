@@ -32,5 +32,7 @@ def main_control_loop(player: ManagedAudioPlayer) -> None:
     #
     while True:
         if is_playing:
-            player.play_current_song()  # Will block during playback
+            song_finished = player.play_current_song()  # Will block during playback
+            if song_finished:
+                player.next_song()
         sleep(SONG_BREAK_DELAY_SECS)
