@@ -24,12 +24,12 @@ def play_callback() -> None:
     is_playing = True
 
 def main_control_loop(player: ManagedAudioPlayer) -> None:
-    global is_playing  # TODO: Eww
-    play_button.on_press = play_callback
-    stop_button.on_press = lambda: stop_callback(player)
-    next_button.on_press = lambda: next_song_callback(player)
-    previous_button.on_press = lambda: previous_song_callback(player)
-
+    # global is_playing  # TODO: Eww
+    # play_button.on_press = play_callback
+    # stop_button.on_press = lambda: stop_callback(player)
+    # next_button.on_press = lambda: next_song_callback(player)
+    # previous_button.on_press = lambda: previous_song_callback(player)
+    #
     while True:
         if is_playing:
             player.play_current_song()  # Will block during playback

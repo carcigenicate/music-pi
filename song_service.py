@@ -7,6 +7,7 @@ from pathlib import Path, PurePath
 from random import choices
 from string import ascii_letters
 from typing import Optional, Tuple, Iterator
+import ssl
 
 from paho.mqtt.subscribe import callback as subscribe_with_callback
 from youtube_dl.utils import YoutubeDLError
@@ -14,17 +15,16 @@ from youtube_dl.utils import YoutubeDLError
 from logging_util import setup_logger
 from song_database import IDCache
 from youtube_downloader import download_audio
+from broker_config import Config
 
 PAYLOAD_ENCODING = "UTF-8"
 MUSIC_EXTENSION = "mp3"
 
-SUBSCRIBE_TOPIC = "request"
-HOSTNAME = "192.168.50.156"
 CLIENT_ID_BASE = "MusicPiClient"
 CLIENT_ID_POST_LENGTH = 5
 
-USERNAME = "reproject"
-PASSWORD = "reproject"
+CONFIG_PATH = "./broker.cfg"
+CONFIG = Config.from_file(CONFIG_PATH)
 
 
 # The current folder. Prevents relying on the CWD, which may cause problems if the client
@@ -37,6 +37,7 @@ service_logger = setup_logger("song_service", "song_service.log")
 
 def _song_path(youtube_id: str) -> str:
     return f"{PurePath(DOWNLOAD_DIRECTORY) / youtube_id}.{MUSIC_EXTENSION}"
+
 
 def _clear_downloaded() -> None:
     """Deletes all regular files in the download directory."""
@@ -73,14 +74,15 @@ class SongService:
                 # If all instances have the same ID and this process gets stuck open somehow, it will cause problems as
                 # soon as another client with the same client ID connects (reconnecting loop between two processes).
                 randomized_client_id = f"{CLIENT_ID_BASE}_{''.join(choices(ascii_letters, k=CLIENT_ID_POST_LENGTH))}"
-                auth = {"username": USERNAME, "password": PASSWORD}
+                auth = {"username": CONFIG.username, "password": CONFIG.password}
                 # Blocks forever.
                 subscribe_with_callback(callback=callback,
-                                        topics=[SUBSCRIBE_TOPIC],
-                                        hostname=HOSTNAME,
+                                        topics=[CONFIG.topic],
+                                        hostname=CONFIG.host,
+                                        port=CONFIG.port,
                                         client_id=randomized_client_id,
                                         auth=auth,
-                                        keepalive=60)
+                                        tls={"tls_version": ssl.PROTOCOL_TLS})
             except ConnectionRefusedError as e:
                 message_logger.warning("Could not contact the MQTT server.")
                 # Just to give a slightly cleaner message to the user.

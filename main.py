@@ -2,7 +2,7 @@
 from time import sleep
 from argparse import ArgumentParser
 
-from song_service import SongService
+from managed_audio_player import ManagedAudioPlayer
 import controls
 from logging_util import setup_logger
 
@@ -14,8 +14,8 @@ main_logger = setup_logger("main", "main.log")
 
 
 def main():
-    with SongService() as service:
-        controls.handle_controls(service)
+    with ManagedAudioPlayer() as player:
+        controls.main_control_loop(player)
 
 
 def resilient_main():
