@@ -29,6 +29,9 @@ class SimpleAudioPlayer:
         # To ensure that the real and "cached" volumes are in sync.
         self.set_volume(self._volume)
 
+        # The MUTE command isn't available in some versions of MPG123. Manually saving/restoring volume instead.
+        self._saved_mute_volume = None
+
         # For the same reason as above
         self._pitch = 0
         self.set_pitch(self._pitch)
@@ -37,9 +40,6 @@ class SimpleAudioPlayer:
         #  violate the current assumptions; causing play_current_song to need to be called twice, and makes it
         #  non-blocking. We need to prevent accidental stops from breaking things.
         self._is_loaded = False
-
-        # Because mpg123 uses separate mute/unmute commands instead of one that toggles the mute state.
-        self._is_muted = False
 
     def _send_command(self, command: str) -> None:
         # Apparently, writing directly to the STDIN can cause dead-locks, according to the Python documentation.
@@ -83,9 +83,12 @@ class SimpleAudioPlayer:
     def toggle_mute(self) -> None:
         """Toggles whether or not the audio is muted as a result of calling the function.
         Returns True if the audio was muted; else False."""
-        command = "unmute" if self._is_muted else "mute"
-        self._send_command(command)
-        self._is_muted = not self._is_muted
+        if self._saved_mute_volume is None:
+            self._saved_mute_volume = self._volume
+            self.set_volume(0)
+        else:
+            self.set_volume(self._saved_mute_volume)
+            self._saved_mute_volume = None
 
     def seek_by(self, seek_by: int) -> None:
         self._send_command(f"seek {seek_by:+f}")
