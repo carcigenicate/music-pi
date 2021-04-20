@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 from time import sleep
 from argparse import ArgumentParser
 
@@ -13,12 +14,12 @@ RESTART_DELAY_SECS = 3
 main_logger = setup_logger("main", "main.log")
 
 
-def main():
+def main() -> None:
     with ManagedAudioPlayer() as player:
         controls.main_control_loop(player)
 
 
-def resilient_main():
+def resilient_main() -> None:
     """Will attempt to recover from failure to maintain uptime.
     Allow for exiting via keyboard interrupts."""
     while True:
