@@ -23,7 +23,7 @@ MUSIC_EXTENSION = "mp3"
 CLIENT_ID_BASE = "MusicPiClient"
 CLIENT_ID_POST_LENGTH = 5
 
-CONFIG_PATH = "./broker.cfg"
+CONFIG_PATH = "broker.cfg"
 CONFIG = Config.from_file(CONFIG_PATH)
 
 
