@@ -1,12 +1,13 @@
 from time import sleep
 from functools import partial
 
-from gpiozero import Button, LED
-
 from managed_audio_player import ManagedAudioPlayer
 from logging_util import setup_logger
 
-SONG_BREAK_DELAY_SECS = 2
+try:
+    from gpiozero import Button, LED
+except ImportError:
+    raise RuntimeError("You need GPIOZero to use controls. Run with --no-controls to start without controls enabled.")
 
 is_playing = True
 
@@ -103,7 +104,7 @@ def rotor_button(player: ManagedAudioPlayer) -> None:
     next_led.off()
 
 
-def main_control_loop(player: ManagedAudioPlayer) -> None:
+def main_control_loop(player: ManagedAudioPlayer, loop_retry_delay: int) -> None:
     pin_a.when_pressed = partial(pin_a_rising, player)
     pin_b.when_pressed = partial(pin_b_rising, player)
     prev_but.when_pressed = partial(previous_button, player)
@@ -118,4 +119,4 @@ def main_control_loop(player: ManagedAudioPlayer) -> None:
             song_finished = player.play_current_song()  # Will block during playback
             if song_finished:
                 player.next_song()
-        sleep(SONG_BREAK_DELAY_SECS)
+        sleep(loop_retry_delay)
