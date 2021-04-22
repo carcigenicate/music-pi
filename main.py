@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 from time import sleep
 from argparse import ArgumentParser
 
@@ -9,7 +8,6 @@ from logging_util import setup_logger
 # To avoid aggressive restarting
 RESTART_DELAY_SECS = 3
 SONG_BREAK_DELAY_SECS = 2
-
 
 main_logger = setup_logger("main", "main.log")
 

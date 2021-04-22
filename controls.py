@@ -1,7 +1,3 @@
-import logging
-from time import sleep
-from functools import partial
-
 from time import sleep
 from functools import partial
 
