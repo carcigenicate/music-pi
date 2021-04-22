@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
+import logging
 from time import sleep
 from argparse import ArgumentParser
 
 from managed_audio_player import ManagedAudioPlayer
+import controls
 from logging_util import setup_logger
 
 # To avoid aggressive restarting
 RESTART_DELAY_SECS = 3
-SONG_BREAK_DELAY_SECS = 2
+
 
 main_logger = setup_logger("main", "main.log")
 
 
 def main(use_controls: bool = True) -> None:
     with ManagedAudioPlayer() as player:
+        print("Not using controls")
         if use_controls:
-            # Importing locally so main.py can be run without gpiozero installed if run with --no-controls.
-            import controls
             controls.main_control_loop(player)
         else:
+            print("Not using controls")
             while True:
                 song_finished = player.play_current_song()  # Will block during playback
                 if song_finished:
                     player.next_song()
-                sleep(SONG_BREAK_DELAY_SECS)
+                sleep(controls.SONG_BREAK_DELAY_SECS)
 
 
 def resilient_main(use_controls: bool = True) -> None:
@@ -51,3 +53,4 @@ if __name__ == "__main__":
         resilient_main(args.no_controls)
     else:
         main(args.no_controls)
+
