@@ -1,3 +1,7 @@
+import logging
+from time import sleep
+from functools import partial
+
 from time import sleep
 from functools import partial
 
@@ -5,9 +9,13 @@ from managed_audio_player import ManagedAudioPlayer
 from logging_util import setup_logger
 
 try:
-    from gpiozero import Button, LED
-except ImportError:
-    raise RuntimeError("You need GPIOZero to use controls. Run with --no-controls to start without controls enabled.")
+    from gpiozero import Button, LED, RotaryEncoder
+except ImportError as e:
+    raise RuntimeError("You need GPIOZero to use controls. Run with --no-controls to start without controls enabled.") \
+        from e
+
+
+SONG_BREAK_DELAY_SECS = 2
 
 is_playing = True
 
@@ -15,8 +23,7 @@ mod_but = Button(18)
 prev_but = Button(23)
 next_but = Button(25)
 play_but = Button(24)
-pin_a = Button(13)
-pin_b = Button(19)
+rotor_enc = RotaryEncoder(13, 19)
 rotor_but = Button(26)
 next_led = LED(12)
 play_led = LED(16)
@@ -26,26 +33,22 @@ mod_led = LED(21)
 player_logger = setup_logger("player", "player.log")
 
 
-# FIXME: Switch to RotaryEncoder class
-def pin_a_rising(player: ManagedAudioPlayer) -> None:
-    if pin_b.is_pressed:
-        if mod_but.is_pressed:
-            player_logger.info("Song Pitch Down 1")
-            player.adjust_pitch(-0.01)
-        else:
-            player_logger.info("Volume Down 1")
-            player.adjust_volume(-5)
+def rotor_clockwise(player: ManagedAudioPlayer) -> None:
+    if mod_but.is_pressed:
+        player_logger.info("Song Pitch Up 1%")
+        player.adjust_pitch(0.01)
+    else:
+        player_logger.info("Volume Up 5%")
+        player.adjust_volume(5)
 
 
-def pin_b_rising(player: ManagedAudioPlayer) -> None:
-    if pin_a.is_pressed:
-        if mod_but.is_pressed:
-            player_logger.info("Song Pitch Up 1")
-            player.adjust_pitch(0.01)
-        else:
-            player_logger.info("Volume Up 1")
-            player.adjust_volume(5)
-
+def rotor_counter_clock(player: ManagedAudioPlayer) -> None:
+    if mod_but.is_pressed:
+        player_logger.info("Song Pitch Down 1%")
+        player.adjust_pitch(-0.01)
+    else:
+        player_logger.info("Volume Down 5%")
+        player.adjust_volume(-5)
 
 def previous_button(player: ManagedAudioPlayer) -> None:
     if mod_but.is_pressed:
@@ -104,9 +107,9 @@ def rotor_button(player: ManagedAudioPlayer) -> None:
     next_led.off()
 
 
-def main_control_loop(player: ManagedAudioPlayer, loop_retry_delay: int) -> None:
-    pin_a.when_pressed = partial(pin_a_rising, player)
-    pin_b.when_pressed = partial(pin_b_rising, player)
+def main_control_loop(player: ManagedAudioPlayer, loop_try_delay: int) -> None:
+    rotor_enc.when_rotated_clockwise = partial(rotor_clockwise, player)
+    rotor_enc.when_rotated_counter_clockwise = partial(rotor_counter_clock, player)
     prev_but.when_pressed = partial(previous_button, player)
     next_but.when_pressed = partial(next_button, player)
     play_but.when_pressed = partial(play_button, player)
@@ -119,4 +122,5 @@ def main_control_loop(player: ManagedAudioPlayer, loop_retry_delay: int) -> None
             song_finished = player.play_current_song()  # Will block during playback
             if song_finished:
                 player.next_song()
-        sleep(loop_retry_delay)
+        sleep(loop_try_delay)
+
