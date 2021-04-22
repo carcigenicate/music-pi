@@ -4,11 +4,11 @@ from time import sleep
 from argparse import ArgumentParser
 
 from managed_audio_player import ManagedAudioPlayer
-import controls
 from logging_util import setup_logger
 
 # To avoid aggressive restarting
 RESTART_DELAY_SECS = 3
+SONG_BREAK_DELAY_SECS = 2
 
 
 main_logger = setup_logger("main", "main.log")
@@ -16,16 +16,15 @@ main_logger = setup_logger("main", "main.log")
 
 def main(use_controls: bool = True) -> None:
     with ManagedAudioPlayer() as player:
-        print("Not using controls")
         if use_controls:
-            controls.main_control_loop(player)
+            import controls
+            controls.main_control_loop(player, SONG_BREAK_DELAY_SECS)
         else:
-            print("Not using controls")
             while True:
                 song_finished = player.play_current_song()  # Will block during playback
                 if song_finished:
                     player.next_song()
-                sleep(controls.SONG_BREAK_DELAY_SECS)
+                sleep(SONG_BREAK_DELAY_SECS)
 
 
 def resilient_main(use_controls: bool = True) -> None:
@@ -46,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--resilient", action="store_true",
                         help="Will restart itself on failure until a keyboard interrupt is received.")
     parser.add_argument("-n", "--no-controls", action="store_false",
-                        help="Disables controls")
+                        help="Disables controls. Without controls, it will just queue and play songs as them come in.")
     args = parser.parse_args()
 
     if args.resilient:
