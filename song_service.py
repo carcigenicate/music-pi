@@ -124,6 +124,7 @@ class SongService:
                 self._available_song_ids.register_song(downloaded_youtube_id)
         except OSError as e:
             # TODO: .empty() can cause an "handle is closed" error during termination.
+            #  Really, termination should be more controlled to ensure that everything shuts down in the correct order.
             service_logger.warning(e)
 
     def get_song_path_by_song_id(self, song_id: int) -> Optional[str]:

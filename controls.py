@@ -7,7 +7,7 @@ from logging_util import setup_logger
 try:
     from gpiozero import Button, LED, RotaryEncoder
 except ImportError as e:
-    raise RuntimeError("You need GPIOZero to use controls. Run with --no-controls to start without controls enabled.") \
+    raise ImportError("You need GPIOZero to use controls. Run with --no-controls to start without controls enabled.") \
         from e
 
 

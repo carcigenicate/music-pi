@@ -6,7 +6,7 @@ from typing import Dict, Optional, Iterator, Tuple
 class IDCache:
     """Maintains bidirectional associations between YouTube video IDs and song sequence IDs."""
     def __init__(self):
-        self._next_id = 0  # TODO: Switch to ordereddict, then just lookup max key?
+        self._next_id = 0
 
         # Emulating a bidirectional dictionary
         self._sid_to_yid: Dict[int, str] = {}

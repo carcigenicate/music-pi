@@ -9,7 +9,7 @@ AUDIO_DOWNLOAD_OPTIONS = \
      'postprocessors': [{
          'key': 'FFmpegExtractAudio',
          'preferredcodec': 'mp3',
-         'preferredquality': '192'}],  # TODO: Reduce?
+         'preferredquality': '192'}],
      #'outtmpl': "./%(id)s.%(ext)s",  # https://github.com/ytdl-org/youtube-dl/blob/master/README.md#output-template
      'quiet': "true"  # False for debugging, True for "production"
      }

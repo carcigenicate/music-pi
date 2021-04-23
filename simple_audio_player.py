@@ -26,15 +26,16 @@ class SimpleAudioPlayer:
         # mpg123 does absolute volume setting. To avoid needing to do a lookup to set volume, we're maintaining
         #  an internal volume level. This value is relative to and independent of the system volume.
         self._volume = 100
+
+        # For the same reason as above
+        self._pitch = 0
+        self.set_pitch(self._pitch)
+
         # To ensure that the real and "cached" volumes are in sync.
         self.set_volume(self._volume)
 
         # The MUTE command isn't available in some versions of MPG123. Manually saving/restoring volume instead.
         self._saved_mute_volume = None
-
-        # For the same reason as above
-        self._pitch = 0
-        self.set_pitch(self._pitch)
 
         # Needed because if you send a "stop" to mpg123 before a "load", it breaks it in odd ways. It makes the output
         #  violate the current assumptions; causing play_current_song to need to be called twice, and makes it
