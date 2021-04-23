@@ -12,17 +12,22 @@ SONG_BREAK_DELAY_SECS = 2
 main_logger = setup_logger("main", "main.log")
 
 
+def controlless_play_loop(player: ManagedAudioPlayer):
+    """Simply plays songs as they're received."""
+    while True:
+        song_finished = player.play_current_song()  # Will block during playback
+        if song_finished:
+            player.next_song()
+        sleep(SONG_BREAK_DELAY_SECS)
+
+
 def main(use_controls: bool = True) -> None:
     with ManagedAudioPlayer() as player:
         if use_controls:
             import controls
             controls.main_control_loop(player, SONG_BREAK_DELAY_SECS)
         else:
-            while True:
-                song_finished = player.play_current_song()  # Will block during playback
-                if song_finished:
-                    player.next_song()
-                sleep(SONG_BREAK_DELAY_SECS)
+            controlless_play_loop(player)
 
 
 def resilient_main(use_controls: bool = True) -> None:

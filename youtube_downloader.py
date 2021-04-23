@@ -1,11 +1,11 @@
 from os import PathLike
-from typing import Any, Dict, Callable, Optional, Union
+from typing import Union
 
 import youtube_dl
 from pathlib import PurePath
 
 AUDIO_DOWNLOAD_OPTIONS = \
-    {'format': "worstaudio/worst",  # For the sake of speed and putting less strain on YT.
+    {'format': "worstaudio/worst",
      'postprocessors': [{
          'key': 'FFmpegExtractAudio',
          'preferredcodec': 'mp3',

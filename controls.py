@@ -46,6 +46,7 @@ def rotor_counter_clock(player: ManagedAudioPlayer) -> None:
         player_logger.info("Volume Down 5%")
         player.adjust_volume(-5)
 
+
 def previous_button(player: ManagedAudioPlayer) -> None:
     if mod_but.is_pressed:
         player_logger.info("Seek Back")
