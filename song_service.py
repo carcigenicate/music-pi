@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from multiprocessing import Process, Queue
-from os.path import isfile
 from pathlib import Path, PurePath
 from random import choices
 from string import ascii_letters
@@ -41,10 +40,11 @@ def _song_path(youtube_id: str) -> str:
 
 def _clear_downloaded() -> None:
     """Deletes all regular files in the download directory."""
-    for file in os.listdir(DOWNLOAD_DIRECTORY):
-        path = PurePath(DOWNLOAD_DIRECTORY, file)
-        if isfile(path):
-            os.remove(path)
+    if DOWNLOAD_DIRECTORY.is_dir():  # If the download directory exists
+        for file in os.listdir(DOWNLOAD_DIRECTORY):
+            path = Path(DOWNLOAD_DIRECTORY, file)
+            if path.is_file():
+                os.remove(path)
 
 
 # Can have song_id (or get_next_song) requests given to it
@@ -150,14 +150,6 @@ class SongService:
 
     def song_available(self) -> bool:
         return len(self) > 0
-
-    @staticmethod
-    def _clear_downloaded() -> None:
-        """Deletes all regular files in the download directory."""
-        for file in os.listdir(DOWNLOAD_DIRECTORY):
-            path = PurePath(DOWNLOAD_DIRECTORY, file)
-            if isfile(path):
-                os.remove(path)
 
     def start_service(self) -> None:
         """Starts the service. Must be called before any other methods."""
