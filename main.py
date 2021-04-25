@@ -54,5 +54,8 @@ if __name__ == "__main__":
     if args.resilient:
         resilient_main(args.no_controls)
     else:
-        main(args.no_controls)
+        try:
+            main(args.no_controls)
+        except KeyboardInterrupt:
+            pass
 
