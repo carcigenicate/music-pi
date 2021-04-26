@@ -25,55 +25,67 @@ next_led = LED(12)
 play_led = LED(16)
 prev_led = LED(20)
 mod_led = LED(21)
+SEEK_STEP = 400000
+VOLUME_STEP = 5
+PITCH_STEP = 0.01
 
 player_logger = setup_logger("player", "player.log")
 
 
 def rotor_clockwise(player: ManagedAudioPlayer) -> None:
+    """Callback for volume/pitch control associated with the clockwise rotation of the rotary encoder"""
     if mod_but.is_pressed:
         player_logger.info("Song Pitch Up 1%")
-        player.adjust_pitch(0.01)
+        player.adjust_pitch(PITCH_STEP)
     else:
         player_logger.info("Volume Up 5%")
-        player.adjust_volume(5)
+        player.adjust_volume(VOLUME_STEP)
+    mod_led.blink(0.025, 0, 1, background=False)
+    prev_led.blink(0.025, 0, 1, background=False)
+    play_led.blink(0.025, 0, 1, background=False)
+    next_led.blink(0.025, 0, 1, background=False)
 
 
 def rotor_counter_clock(player: ManagedAudioPlayer) -> None:
+    """Callback for volume/pitch control associated with the counter-clockwise rotation of the rotary encoder"""
     if mod_but.is_pressed:
         player_logger.info("Song Pitch Down 1%")
-        player.adjust_pitch(-0.01)
+        player.adjust_pitch(-PITCH_STEP)
     else:
         player_logger.info("Volume Down 5%")
-        player.adjust_volume(-5)
+        player.adjust_volume(-VOLUME_STEP)
+    next_led.blink(0.025, 0, 1, background=False)
+    play_led.blink(0.025, 0, 1, background=False)
+    prev_led.blink(0.025, 0, 1, background=False)
+    mod_led.blink(0.025, 0, 1, background=False)
 
 
 def previous_button(player: ManagedAudioPlayer) -> None:
+    """Callback to control the previous song/seek back features associated with the previous button  """
     if mod_but.is_pressed:
         player_logger.info("Seek Back")
-        player.seek_by(-400000)
+        player.seek_by(-SEEK_STEP)
     else:
         player_logger.info("Previous Song")
         player.previous_song()
         player.stop()
     prev_led.on()
-    sleep(1)
-    prev_led.off()
 
 
 def next_button(player: ManagedAudioPlayer) -> None:
+    """Callback to control the next song/seek forwards features associated with the next button."""
     if mod_but.is_pressed:
         player_logger.info("Seek Forwards")
-        player.seek_by(400000)
+        player.seek_by(SEEK_STEP)
     else:
         player_logger.info("Next Song")
         player.next_song()
         player.stop()
     next_led.on()
-    sleep(1)
-    next_led.off()
 
 
 def play_button(player: ManagedAudioPlayer) -> None:
+    """Callback to control play/pause features associated with the play button."""
     global is_playing
     if mod_but.is_pressed:
         player_logger.info("Pause Song")
@@ -82,11 +94,10 @@ def play_button(player: ManagedAudioPlayer) -> None:
         player_logger.info("Play Song")
         is_playing = True
     play_led.on()
-    sleep(1)
-    play_led.off()
 
 
 def rotor_button(player: ManagedAudioPlayer) -> None:
+    """Callback to control mute/pitch reset features associated with the rotary encoder button."""
     if mod_but.is_pressed:
         player_logger.info("Reset Pitch")
         player.set_pitch(0)
@@ -97,14 +108,19 @@ def rotor_button(player: ManagedAudioPlayer) -> None:
     prev_led.on()
     play_led.on()
     next_led.on()
-    sleep(1)
-    mod_led.off()
+
+
+def leds_off() -> None:
+    """Turns all LED's off simultaneously."""
     prev_led.off()
     play_led.off()
+    mod_led.off()
     next_led.off()
 
 
 def main_control_loop(player: ManagedAudioPlayer, loop_try_delay: int) -> None:
+    """Main playback loop for the controls.
+    Blocks forever."""
     rotor_enc.when_rotated_clockwise = partial(rotor_clockwise, player)
     rotor_enc.when_rotated_counter_clockwise = partial(rotor_counter_clock, player)
     prev_but.when_pressed = partial(previous_button, player)
@@ -113,11 +129,18 @@ def main_control_loop(player: ManagedAudioPlayer, loop_try_delay: int) -> None:
     rotor_but.when_pressed = partial(rotor_button, player)
     mod_but.when_pressed = mod_led.on
     mod_but.when_released = mod_led.off
+    play_but.when_released = play_led.off
+    next_but.when_released = next_led.off
+    prev_but.when_released = prev_led.off
+    rotor_but.when_released = leds_off
 
-    while True:
-        if is_playing:
-            song_finished = player.play_current_song()  # Will block during playback
-            if song_finished:
-                player.next_song()
-        sleep(loop_try_delay)
+    try:
+        while True:
+            if is_playing:
+                song_finished = player.play_current_song()  # Will block during playback
+                if song_finished:
+                    player.next_song()
+            sleep(loop_try_delay)
+    finally:
+        leds_off()
 
