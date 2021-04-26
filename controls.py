@@ -13,7 +13,10 @@ except ImportError as e:
 
 SONG_BREAK_DELAY_SECS = 2
 
-is_playing = True
+SEEK_STEP = 400000
+VOLUME_STEP = 5
+PITCH_STEP = 0.01
+
 
 mod_but = Button(18)
 prev_but = Button(23)
@@ -25,9 +28,9 @@ next_led = LED(12)
 play_led = LED(16)
 prev_led = LED(20)
 mod_led = LED(21)
-SEEK_STEP = 400000
-VOLUME_STEP = 5
-PITCH_STEP = 0.01
+
+is_playing = True
+
 
 player_logger = setup_logger("player", "player.log")
 
