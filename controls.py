@@ -17,7 +17,6 @@ SEEK_STEP = 400000
 VOLUME_STEP = 5
 PITCH_STEP = 0.01
 
-
 mod_but = Button(18)
 prev_but = Button(23)
 next_but = Button(25)
@@ -28,8 +27,6 @@ next_led = LED(12)
 play_led = LED(16)
 prev_led = LED(20)
 mod_led = LED(21)
-
-is_playing = True
 
 
 player_logger = setup_logger("player", "player.log")
@@ -89,13 +86,8 @@ def next_button(player: ManagedAudioPlayer) -> None:
 
 def play_button(player: ManagedAudioPlayer) -> None:
     """Callback to control play/pause features associated with the play button."""
-    global is_playing
-    if mod_but.is_pressed:
-        player_logger.info("Pause Song")
-        player.toggle_pause()
-    else:
-        player_logger.info("Play Song")
-        is_playing = True
+    player_logger.info("Toggle Pause")
+    player.toggle_pause()
     play_led.on()
 
 
@@ -131,6 +123,7 @@ def main_control_loop(player: ManagedAudioPlayer, loop_try_delay: int) -> None:
     play_but.when_pressed = partial(play_button, player)
     rotor_but.when_pressed = partial(rotor_button, player)
     mod_but.when_pressed = mod_led.on
+
     mod_but.when_released = mod_led.off
     play_but.when_released = play_led.off
     next_but.when_released = next_led.off
@@ -139,10 +132,9 @@ def main_control_loop(player: ManagedAudioPlayer, loop_try_delay: int) -> None:
 
     try:
         while True:
-            if is_playing:
-                song_finished = player.play_current_song()  # Will block during playback
-                if song_finished:
-                    player.next_song()
+            song_finished = player.play_current_song()  # Will block during playback
+            if song_finished:
+                player.next_song()
             sleep(loop_try_delay)
     finally:
         leds_off()
